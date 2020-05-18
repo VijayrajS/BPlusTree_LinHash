@@ -1,0 +1,64 @@
+B+ Tree (Bplus.cpp)
+-------------------
+
+*Description of the insert function:
+
+We first traverse to the leaf where the child should be inserted. If there is space, we insert it. Else, we split the leaf, and add the smallest element to the parent's data, and add the pointer to the new leaf to the parent's pointer list.
+
+        <...[x]...> (parent)
+        |
+        <[x][y][z]>
+        
+        (Add w)
+        
+        <...[x]...>
+             |
+        <[x][y][z][w]>
+        
+        (Which becomes)
+        
+        <...[x]...[z]>
+             |    \
+        <[x][y]>  <[z][w]>
+
+After splitting, we go back to the parent, and sort the data in the parent. Ex.
+Suppose the scenario was
+        <[5]...>
+        |
+        <[2][3][4]>
+We insert 1, we get
+        <[5]...[1]>
+        |        \
+        <[3][4]> <[1][2]>
+So, after the sorting the tree looks like
+        <[1][5]...>
+        |       \
+        <[1][2]> <[3][4]>
+
+If the parent's data is full, we split the parent recursively, from bottom to top.
+If we split the root, we need to make a new root, and assign the new node as root.
+
+<[x][y][z]>  (adding w to root)  <[x][y][z][w]> 
+  |  |  |                          |  |  |  |
+
+  {Assuming they are sorted, we split}
+   <[z] []>
+    |   \
+<[x][y]>   <[z][w]>
+
+For find, we search by seeing if data < the value in the parent. If we find the value present in a parent node, we abort abruptly, since we know that it has to be in the leaf nodes, if it is in the parent. (Since there is no delete)
+
+For range, we search for the first occurence of the lower value by checking if data <= the value in the parent, since we can have the case where
+
+Leaf: <[1][2][2]> -> insert 2 -> <[1][2][2][2]> -> (Split according to our insert)
+
+                        <[2][][]>
+                        /    \
+                    <[1][2]> <[2][2]>
+
+After finding the first occurence, we travel through the leaf-linked list and count the number of elements <=lo & <=hi.
+Count is range(x, x), where x is the number to be counted
+
+Linear Hashing (LinHash.cpp)
+----------------------------
+We compute h(K), where K is the key of the record, and we use the i bits at the end of bit sequence h(K) as the bucket number, m. If m < n, we first search for the record in bucket m, and if m >= n, in bucket m — 2^(i-1). If the record is not found, we proceed to insert in the same bucket number calculated before. If there is no room in the bucket, then we create an overflow block, add it to the chain for that bucket,and put the record there. Each time we insert, we compare the current number of records r with the threshold ratio of r/t (t being total number of records that can be held), and if the ratio is too high, we add the next bucket to the table. If the binary representation of the number of the bucket we add is 1a2•••ai, then we split the bucket numbered 0a2•••ai, putting records into one or the other bucket, depending on their last i bits.  The last important detail is what happens when n exceeds 2^i. Then, i is incremented by 1. The data blocks in each bucket is 1KB of data (excluding pointer to overflow), and the threshold is set at 0.75 (75%).
